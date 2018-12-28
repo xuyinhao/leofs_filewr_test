@@ -1,0 +1,16 @@
+FileTest2.sh /datapool/awrdir_rep2
+FGTest1.sh /datapool/awrdir_rep2
+FileTest2.sh /datapool/awrdir_xd21
+FGTest1.sh /datapool/awrdir_xd21
+FileTest2.sh /datapool/awrdir_xd22
+FGTest1.sh /datapool/awrdir_xd22
+FileTest2.sh /datapool/awrdir_xd44
+FGTest1.sh /datapool/awrdir_xd44
+FileTest2.sh /datapool/awrdir_xd43
+FGTest1.sh /datapool/awrdir_xd43
+FileTest2.sh /datapool/awrdir_xd83
+FGTest1.sh /datapool/awrdir_xd83
+FileTest2.sh /datapool/awrdir_xd84
+FGTest1.sh /datapool/awrdir_xd84
+FileTest2.sh /datapool/awrdir_xd162
+FGTest1.sh /datapool/awrdir_xd162

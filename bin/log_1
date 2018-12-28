@@ -1,0 +1,2 @@
+1:write  2 :/datapool/testwrdir_xd22  3 :FileTest1.sh  4:2  5:/datapool/testwrdir_xd22/log/filetesterror.log 6:/datapool/testwrdir_xd22/log/ftlog1_400m_1k.log 7:/datapool/testwrdir_xd22/ft1_400mx2_1k 8:400m  9:1k 
+1:write  2 :/datapool/testwrdir_xd22  3 :FileTest2.sh  4:2  5:/datapool/testwrdir_xd22/log/filetesterror.log 6:/datapool/testwrdir_xd22/log/ftlog2_300m_4k.log 7:/datapool/testwrdir_xd22/ft2_300mx2_4k 8:300m  9:4k

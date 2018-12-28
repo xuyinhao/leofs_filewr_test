@@ -1,0 +1,1 @@
+java -jar check.jar baseDir dirName dirNum fileName fileNum filesize bufferSize threadNum depth allFlush

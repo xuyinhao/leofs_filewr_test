@@ -1,0 +1,316 @@
+#!/bin/bash
+#. bin/default.conf
+#. bin/common
+blkwrlog=${cpath}/log/blkwr.log
+blkelog=${cpath}/log/blkerror.log
+blksteplog=${cpath}/log/blkstep.log
+cfgcmd="/LeoCluster/bin/leofs_cfgcmd"
+layoutcmd="/LeoCluster/bin/leofslayout3"
+function blklog(){
+echo -e $@ | tee -a $blksteplog
+}
+function berrlog(){
+echo -e $@ | tee -a $blkelog
+}
+function createblkdev {
+ #leofs_cfgcmd create-blkdev path  spanum spansize blksize volsize name [layouttype parm1 [parm2]]
+bid=`$cfgcmd create-blkdev $blkpath $1      $2     $3      $4     $5    $6 $7 $8`
+flag=$?
+bid=`echo $bid|awk  '{print $(NF)}'|sed 's/.$//'`  #拿blkid
+blklog checkok $flag blkid$bid:$5
+if [ $flag = "0" ];then
+	blklog "exec create  blkid$bid:$5 \033[32m pass\033[0m "
+        echo "$bid $5" >> ${cpath}/conf/.tmp/bdsrc
+else 
+	berrlog blklog "exec create  blkid$bid:$5 \033[31m fail\033[0m "
+	continue
+fi
+echo $bid >> $blksteplog
+vols="$4"
+vsize=`echo $vols|cut -c1-$((${#vols}-2))`
+#rm -rf ${cpath}/conf/.tmp/gt512
+sleep 0.1
+if [[ ${vsize} -gt 511000 ]];then
+	echo "${bid}" >> ${cpath}/conf/.tmp/gt512src
+fi
+}
+function checkcslayout {
+srclay=`$layoutcmd -s ${blkpath}/bdvol${1}/*0`
+newlay=`$layoutcmd -s ${blkpath}/bdvol${2}/*0`
+srclay=`echo $srclay|awk -F ":" '{$1="";print $0}'`
+newlay=`echo $newlay|awk -F ":" '{$1="";print $0}'`
+if [ "$srclay" = "$newlay" ];then
+	blklog "checklayout ${2} blkdid${bid} from  blkid${1} \033[32m pass\033[0m "
+else
+	blklog "checklayout ${2} blkdid${bid} from  blkid${1} \033[31m failed\033[0m "
+	continue
+fi
+}
+function csblkdev {
+# 		 $1=srcblkid(bid)  $2= clone / snapshot
+# rm -rf ${cpath}/conf/.tmp/bd$2
+bid=`$cfgcmd ${2}-blkdev $1 $blkpath ${1}_${2}`
+flag=$?
+bid=`echo $bid|awk  '{print $(NF)}'|sed 's/.$//'`
+checkok $flag blkid$bid:${bid}_${2}
+if [ $flag = "0" ];then
+        blklog "exec ${2} blkdid${bid} from  blkid${1} \033[32m pass\033[0m "
+fi
+checkcslayout $1 $bid $2
+#需要把之前src块设备的大文件信息、写文件参数相关属性映射一份
+srcbf=`grep "^${1}$" ${cpath}/conf/.tmp/gt512src`
+if [ "${srcbf}" != "" ];then
+	echo "${bid}" >> ${cpath}/conf/.tmp/gt512${2}
+fi
+wrtmpnum=`cat ${cpath}/conf/.tmp/wrtmp|grep "^${1}_ "|awk '{print $2}'`
+echo "${bid}_ $wrtmpnum" >> ${cpath}/conf/.tmp/wrtmp
+tmparg=`cat ${cpath}/conf/.tmp/tmparg|grep leobd1d${1}$ |awk '{$(NF)="";print $0}'`
+echo "$tmparg leobd1d${bid}" >> ${cpath}/conf/.tmp/tmparg 
+echo " blkdev$bid ${2} ">> $blksteplog
+echo "$bid ${1}_${2}" >> ${cpath}/conf/.tmp/bd$2
+
+}
+
+function deleteblkdev {
+#	devid name [rmdata]
+aa=`$cfgcmd delete-blkdev  $1  $2   1`
+flag=$?
+checkok $? blkid$1:$2
+echo $aa 1>>$blksteplog 2>>$blkelog
+if [ $flag = "0" ];then
+	blklog "exec delete blkid$1:$2 \033[32mpass\033[0m"
+fi
+}
+function deletedev {
+#$1=src clone  snapshot
+blklog "delete  $1  blkdev"
+if [ ! -f ${cpath}/conf/.tmp/bd$1 ];then
+	blklog "\033[32mnot exsit  ${1}blkid conf,maybe have been  deleted\033[0m"
+else
+OLDIFS="$IFS"
+IFS=$'\n'
+for i in `cat ${cpath}/conf/.tmp/bd${1}`
+do
+IFS="$OLDIFS"
+        deleteblkdev $i    #$i ="bid name"
+	sleep 0.2
+	checkpath=`ls ${blkpath}/bdvol${i} >/dev/null 2>&1`
+	flag1=$?
+	checkshow=`$cfgcmd show-all-blkdev|grep ${i} >/dev/null 2>&1`
+	flag2=$?
+	if [ $flag1 = 0 ]||[ $flag2 = 0 ];then
+		blklog "check delete blkdev $i \033[31mfailed\033[0m"
+		berrlog "delete $i failed, checkpath:$checkpath , checkshow:$checkshow" >>$blkelog
+	fi
+done
+fi
+
+}
+
+function showallblkdev {
+$cfgcmd  show-all-blkdev|grep "Total blkdev"|awk '{print $4}'
+}
+function showblkinfo {
+#showblkinfo $bid $sn $ss $bs ${vss[vsmod]} $bn ${laylist[layoutmod]}
+Spannum=`$cfgcmd show-blkdev-info $1 |grep Spannum|awk '{print $3}'`
+Spansize=`$cfgcmd show-blkdev-info $1|grep Spansize |awk '{print $3}'`
+Blksize=`$cfgcmd show-blkdev-info $1|grep Blksize|awk '{print $3}'`
+Volsize=`$cfgcmd show-blkdev-info $1|grep Volsize|awk '{print $3}'`
+Devname=`$cfgcmd show-blkdev-info $1|grep "Dev name"|awk '{print $4}'`
+if [ "$7" = "rep" ]||[ "$7" = "srep" ];then
+	repnum=`$laycmd -s $blkpath/bdvol$1|grep "rep,"|awk -F ":" '{print $3}'`
+	laytype="$7$repnum"
+elif [ "$7" = "leoraid" ]||[ "$7" = "sleoraid" ];then
+	diskspan=`$laycmd -s $blkpath/bdvol$1|grep "leoraid,"|awk -F ":" '{print $3}'`
+	laytype="$7${diskspan}"
+elif [ "$7" = "strip" ]||[ "$7" = "sstrip" ];then
+	diskspan=`$laycmd -s $blkpath/bdvol$1|grep "strip,"|awk -F ":" '{print $3}'|cut -b 1`
+	repnum=`$laycmd -s $blkpath/bdvol$1|grep "strip,"|awk -F ":" '{print $4}'`
+	laytype="$7${diskspan}${repnum}"
+elif [ "$7" = "xd" ];then
+        xd_N=`$laycmd -s $blkpath/bdvol$1|grep "xd,"|awk -F ":" '{print $3}'|awk -F "," '{print $1}'`
+        xd_M=`$laycmd -s $blkpath/bdvol$1|grep "xd,"|awk -F ":" '{print $4}'`
+        laytype="$7${xd_N}${xd_M}"
+        blklog $laytype
+else
+	berrlog blklog "not rep leoradi strip xd layout ,skip check"
+	laytype=$6$7$8
+fi
+if [ "$Spannum" != "$2" ]||[ "$Spansize" != "$3" ]||[ "$Blksize" != "$4" ]||[ "$Volsize" != "$5" ]||[ "$Devname" != "$6" ]||[ "$laytype" != "$7$8$9" ];then
+	berrlog blklog "checl blkid$1:\033[31merror\033[0m"
+	blklog "$Spannum $Spansize $Blksize $Volsize $Devname $laytype"
+	blklog "$2 $3 $4 $5 $6 $7$8$9"
+else
+	blklog "check blkid$1:\033[32mpass\033[0m"
+	 
+fi
+}
+function checkcs {
+if [ "$7" = "rep" ];then
+        repnum=`$laycmd -s $blkpath/bdvol$1|grep "rep,"|awk -F ":" '{print $3}'`
+        laytype="rep$repnum"
+elif [ "$7" = "leoraid" ];then
+        diskspan=`$laycmd -s $blkpath/bdvol$1|grep "leoraid,"|awk -F ":" '{print $3}'`
+        laytype="leoraid${diskspan}"
+elif [ "$7" = "strip" ];then
+        diskspan=`$laycmd -s $blkpath/bdvol$1|grep "strip,"|awk -F ":" '{print $3}'|cut -b 1`
+        repnum=`$laycmd -s $blkpath/bdvol$1|grep "strip,"|awk -F ":" '{print $4}'`
+        laytype="strip${diskspan}${repnum}"
+else
+        echo "not rep leoradi strip layout ,skip check"
+        laytype=$6$7$8
+fi
+
+
+}
+function checkclient {
+nodes=(${nodeList})
+nodeNum=${#nodes[@]}
+#echo "$nodeNum"
+cnum=0
+for i in $(seq 0 $(($nodeNum-1)))
+do
+aa=`ssh ${nodes[i]} "ps aux|grep umds|grep -v grep"`
+if [ "$aa" != "" ];then
+#       echo -e "${nodes[i]} umds\n"
+        :
+else
+        clientnode[$cnum]=${nodes[i]}
+        let cnum+=1
+fi
+done
+
+clientnodelist=${clientnode[@]} #非元数据客户端列表
+for j in $(seq 0 $(($cnum-1)))
+do
+        cid=`ssh ${clientnode[j]} "cat /proc/fs/LeoFS/LeoFS/vol1/clientid"`
+        clientid[$j]="$cid"
+done
+#
+clientidlist=${clientid[@]}
+clientidNum=${#clientid[@]}
+for i in ${clientnodelist}
+do
+	ssh $i '
+	 a=$(grep "^MaxStartups" /etc/ssh/sshd_config)
+        max="MaxStartups 100:30:100"
+        #echo $a
+        #echo $max 
+        if [ "$a" = "$max" ];then
+               : 	
+        elif [ "$a" = "" ];then
+                echo "$max" >> /etc/ssh/sshd_config
+        else
+                sed -i 's/\"'$a'\"/\"'$max'\"/g' /etc/ssh/sshd_config
+        fi
+	service sshd restart >/dev/null 2>&1
+	'
+done
+}
+function mapclient {
+# $1 = bid   $2 clientid
+$cfgcmd map-client $1 $2
+flag=$?
+#checkok $? mapblk${1}tocid${2}
+if [ "$flag" != "0" ];then
+	berrlog blklog "map blk $1 to clientid $2 \033[31mfailed\033[0m" 
+else 
+	blklog "map blk $1 to clientid $2 \033[32mpass\033[0m"
+fi
+}
+function unmapclient {
+# $1 = bid   $2 clientid
+$cfgcmd unmap-client $1 $2
+flag=$?
+#checkok $? mapblk${1}tocid${2}
+if [ "$flag" != "0" ];then
+        berrlog blklog "unmap blk $1 to clientid $2 \033[31mfailed\033[0m" 
+else
+        blklog  "unmap blk $1 to clientid $2 \033[32mpass\033[0m"
+fi
+}
+function checkmap {
+#$1 bid ;$2 clientnode
+	sleep 1
+	fdiskreturn=`ssh $2 'fdisk -l|grep "Disk /dev/leobd1d'${1}:'"'`
+	lsreturn=`ssh $2 'ls /dev/*|grep "leobd1d'${1}'$"'`
+	sleep 0.1
+	mapcreturn=`$cfgcmd show-blkdev-info $1|grep "Mapped client"|awk '{print $3}'`
+	if [ $? -ne 0 ];then
+	sleep 1
+	mapcreturn=`$cfgcmd show-blkdev-info $1|grep "Mapped client"|awk '{print $3}'`
+	fi 
+}
+function testwr {
+	avasize=`df -B1|grep leobd1d${1}$|awk '{print $4}'`
+	if [ "$avasize" = "" ];then
+                blklog "no devblk mounted,exit"
+	else
+	 bigfsize=`expr ${avasize} \* 6 / 10`
+	 smallfsize=`expr ${avasize} \*  3 / 10`
+	 bigfnum=20
+	 if [[ ${avasize} -gt 536870912000 ]];then
+                bigfnum=40
+         fi 
+	 bigsize=`expr $bigfsize / $bigfnum`
+	
+	 smallfnum=100000
+	 vols=`fdisk -l |grep "Disk /dev/leobd1d${1}:"|awk '{print $5}'`
+ 	 blksize=`expr $vols / 1024 / 1024`
+	 if [[ $blksize -lt 2048 ]];then
+		smallfnum=10000
+		sm=1
+	 fi
+	 smallsize=100 
+	
+#	 mulnum=$smallnum
+	 mulsize=$smallsize
+	fi
+	
+}
+function showclientmapinfo {
+#$1 cltid
+blkList=`$cfgcmd  show-client-map $1 |sed -n '2p'|awk '{$1="";$2="";print $0}'`
+blkList=`echo $blkList|tr ' ' '\n'|sort|tr '\n' ' '`
+total=`leofs_cfgcmd show-client-map $1|sed -n 1p|awk '{print $2}'`
+#cltmaptotal=`fdisk -l |grep "Disk /dev/leobd1d*"|wc -l`
+if [[ $total = "any" ]];then
+	total=0
+fi
+#leofs_cfgcmd show-client-map 3|sed -n '2p'|awk '{$1="";$2="";print $0}'
+}
+
+function expanddev {
+#$1 =bid
+bsize=`$cfgcmd show-blkdev-info $1|grep "Volsize"|awk  '{print $3}'`
+oldbsize=`echo $bsize|cut -c1-$((${#bsize}-2))`
+newbsize=`expr  $oldbsize + $oldbsize  / 100`
+#扩展
+$cfgcmd expand-blkdev $1 ${newbsize}MB
+}
+
+#expanddev
+function blklayout {
+laynum=0
+laylist=()
+OLDIFS="$IFS"
+IFS=$'\n'
+for layoutname in ${layoutconf}
+do
+  exist1=`echo "$layoutname"| grep  "#"`
+  if [ "$exist1" != "" ]; then
+      :
+  else
+      layoutnamen[${laynum}]=`echo "$layoutname"|sed -e 's/ //g'`
+      #testdirn[$laynum]="${testdir}_${layoutnamen}"
+        IFS="$OLDIFS"
+       #mkdir -p  ${testdirn[laynum]}
+       laylist[${laynum}]=${layoutname}  #laylist数组
+        IFS="$OLDIFS"
+       # $laycmd -c ${testdirn[laynum]} $layoutname > /dev/null 2>&1
+      laynum=`expr $laynum + 1`
+  fi
+done
+#echo $laynum
+IFS="$OLDIFS"
+}

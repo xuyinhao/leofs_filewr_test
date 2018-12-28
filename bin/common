@@ -1,0 +1,114 @@
+#!/bin/bash
+
+function checkok {
+     if [ "$1" != "0" ];then
+        echo -e "exec $filesh  \033[31m failed \033[0m"
+        echo "$2"
+	continue
+	#exit
+     fi
+}
+
+function log()
+{
+    echo -e $@ | tee -a $retlog
+}
+
+function mulwrcheck {
+     if [ "$1" != "0" ];then
+        echo -e "exec $filesh  \033[31m failed \033[0m"
+        echo "$2"
+     else
+	echo -e "exec $filesh $3  \033[32m ok \033[0m"
+     fi
+}
+function restartcmd {
+for i in 1 2 3 
+do
+    if [ $1 -ne 0 ];then
+        $2
+        if [ $? -eq 0 ];then break;fi
+    else
+	break
+    fi
+
+done
+}
+#转化grpsize大小为MB
+function size2 {  
+if [ $objsize = "default" ];then
+    :
+else
+   grpsize=`expr $objsize \* $1`
+   grpsizem=`expr $grpsize / 1024`
+   $grpsizecmd -c -R $2 ${grpsizem}m
+fi
+}
+#设置冗余、grpsize
+function layout {
+laynum=0
+laylist=()
+OLDIFS="$IFS"
+IFS=$'\n'
+for layoutname in ${layoutconf}
+do
+  exist1=`echo "$layoutname"| grep  "#"`
+  if [ "$exist1" != "" ]; then
+      : 	#echo 1 > /dev/null
+  else
+      	layoutnamen=`echo "$layoutname"|sed -e 's/ //g'`
+      	testdirn[$laynum]="${testdir}_${layoutnamen}"
+      	mkdir -p  ${testdirn[laynum]}
+      	laylist[${laynum}]=${layoutname}  #laylist数组
+      	IFS="$OLDIFS"
+      	$laycmd -c ${testdirn[laynum]} $layoutname > /dev/null 2>&1
+	log  $laycmd -c ${testdirn[laynum]} $layoutname
+	name=$(echo "$layoutname"|cut -b 1-5)
+	if [ "$name" == "xd 16" ];then
+	    size2 16 ${testdirn[laynum]}
+	elif [ "$name" == "xd 8 " ];then
+            size2 8 ${testdirn[laynum]}
+	elif [ "$name" == "xd 4 " ];then
+	    size2 4 ${testdirn[laynum]}
+	elif [ "$name" == "xd 2 " ];then
+	    size2 2 ${testdirn[laynum]}
+	fi
+
+      laynum=`expr $laynum + 1`
+  fi
+done
+IFS="$OLDIFS"
+}
+
+
+function wordcount {
+awk -F' ' '{for(i=1;i<=NF;i=i+1){print $i}}' $1 |sort|uniq -c|sort -nr|awk -F' ' '{printf("%s %s\n",$2,$1)}'|grep "^${2}"|awk '{print $2}'
+}
+
+function sshcmd {
+ ssh $1 $"${@// /\\ }" 2>&1 | sed "s/^/$1:/" &
+}
+
+function menu {
+case $1 in
+         write)
+             init
+	     run
+             ;;
+         check)
+             check
+             ;;
+         remove)
+             init
+	     remove_dir
+             ;;
+         all)
+             init
+             run
+             check
+             ;;
+        *)
+             echo "Argument1:write|check|remove|all"
+        ;;
+ esac
+}
