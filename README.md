@@ -32,9 +32,9 @@ testcase.conf
 log			
 >日志存放  
 ***
-sbin
-blktest.sh			
->块设备的测试
+sbin  
+>blktest.sh			
+块设备的测试
 multiPoolTask.py  		
 >py multiPoolTask进程池 控制每个节点同时进行的任务数;multasknum
 testwr.sh              
