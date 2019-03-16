@@ -8,12 +8,12 @@ leotest add py multiPoolTask
 ## 目录介绍
 ***
  bin    
-> 一些公共的方法以及需要调用的脚本
-blkcommon
-blktest.sh
-common
-Devices.info
-... *.sh  			
+> 一些公共的方法以及需要调用的脚本  
+blkcommon  
+blktest.sh  
+common  
+Devices.info  
+... *.sh  
 >各个用例所需的脚本执行以及简单日志分析
 ***
 conf        
