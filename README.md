@@ -20,8 +20,7 @@ conf
 >配置信息    
  default.conf  	 
 >必须配置，设置文件读写位置以及哪些客户端节点  
- leofslayout.conf       
->冗余度的设置  
+ leofslayout.conf 冗余度的设置  
 testcase.conf    			
 >测试项的选择  
 ***
@@ -34,11 +33,9 @@ log
 ***
 sbin  
 >blktest.sh			
-块设备的测试
-multiPoolTask.py  		
->py multiPoolTask进程池 控制每个节点同时进行的任务数;multasknum
-testwr.sh              
->文件读写测试
+块设备的测试  
+>multiPoolTask.py进程池 控制每个节点同时进行的任务数;multasknum  
+testwr.sh 文件读写测试
 ***
  while.sh	
 > overnight测试
