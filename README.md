@@ -17,27 +17,27 @@ Devices.info
 >各个用例所需的脚本执行以及简单日志分析
 ***
 conf        
->配置信息  
- default.conf	 
->必须配置，设置文件读写位置以及哪些客户端节点
+>配置信息    
+ default.conf  	 
+>必须配置，设置文件读写位置以及哪些客户端节点  
  leofslayout.conf       
->冗余度的设置
-testcase.conf  			
->测试项的选择
+>冗余度的设置  
+testcase.conf    			
+>测试项的选择  
 ***
  lib		
->测试工具类
- *.jar  *.py
+>测试工具类 
+ *.jar  *.py 
  ***
 log			
->日志存放
+>日志存放  
 ***
 sbin
 blktest.sh			
 >块设备的测试
-multiPoolTask.py		
+multiPoolTask.py  		
 >py multiPoolTask进程池 控制每个节点同时进行的任务数;multasknum
-testwr.sh            
+testwr.sh              
 >文件读写测试
 ***
  while.sh	
