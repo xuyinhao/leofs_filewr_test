@@ -1,15 +1,19 @@
 #!/bin/bash
-
+cpath0=`dirname $0`
+cpaths=`cd "${cpath0}";cd "..";pwd`
+. ${cpaths}/lib/log_tool.sh
+COMMON_LOG_PATH=${cpaths}/log/commonsh.log
 function checkok {
      if [ "$1" != "0" ];then
         echo -e "exec $filesh  \033[31m failed \033[0m"
         echo "$2"
+		syslog "leofs_wr" "$2" 1 "exec cmd failed"
 	continue
 	#exit
      fi
 }
 
-function log()
+function log_and_tee()
 {
     echo -e $@ | tee -a $retlog
 }
@@ -44,7 +48,12 @@ else
    $grpsizecmd -c -R $2 ${grpsizem}m
 fi
 }
-#设置冗余、grpsize
+
+##########################################################################
+#  DESCRIPTION  : 根据default.conf文件 设置目录冗余、grpsize 
+#  Para         : NULL
+#  Return 		: 0 ; mkdir layout dir
+##########################################################################
 function layout {
 laynum=0
 laylist=()
@@ -62,15 +71,16 @@ do
       	laylist[${laynum}]=${layoutname}  #laylist数组
       	IFS="$OLDIFS"
       	$laycmd -c ${testdirn[laynum]} $layoutname > /dev/null 2>&1
-	log  $laycmd -c ${testdirn[laynum]} $layoutname
-	name=$(echo "$layoutname"|cut -b 1-5)
-	if [ "$name" == "xd 16" ];then
+	show_log  "info" "$laycmd -c ${testdirn[laynum]} $layoutname"
+	name=$(echo "$layoutname"|cut -b 1-6)
+	log_info "cut1~6,$name" "$LINENO" "$COMMON_LOG_PATH"
+	if [ "$name" == "xd2 16" ];then
 	    size2 16 ${testdirn[laynum]}
-	elif [ "$name" == "xd 8 " ];then
+	elif [ "$name" == "xd2 8 " ];then
             size2 8 ${testdirn[laynum]}
-	elif [ "$name" == "xd 4 " ];then
+	elif [ "$name" == "xd2 4 " ];then
 	    size2 4 ${testdirn[laynum]}
-	elif [ "$name" == "xd 2 " ];then
+	elif [ "$name" == "xd2 2 " ];then
 	    size2 2 ${testdirn[laynum]}
 	fi
 
@@ -78,8 +88,16 @@ do
   fi
 done
 IFS="$OLDIFS"
+return 0 
 }
 
+function space_split
+{
+    value="$1"
+    index="$2"
+    ret=$(echo "$value"|awk '{print $'$index'}' )
+    echo "$ret"
+}
 
 function wordcount {
 awk -F' ' '{for(i=1;i<=NF;i=i+1){print $i}}' $1 |sort|uniq -c|sort -nr|awk -F' ' '{printf("%s %s\n",$2,$1)}'|grep "^${2}"|awk '{print $2}'
@@ -93,7 +111,7 @@ function menu {
 case $1 in
          write)
              init
-	     run
+	     	run
              ;;
          check)
              check

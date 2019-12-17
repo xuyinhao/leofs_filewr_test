@@ -1,0 +1,12 @@
+node30
+
+Sun Nov 24 05:33:48 2019
+2019-11-24_05:33:48  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh write /datapool/awrdir_rep1 FileTest0.sh 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k
+2019-11-24_05:33:56 [INFO]:FileTest0.sh: 1gx1_1k wirte pass
+
+node30
+
+Sun Nov 24 05:33:48 2019
+2019-11-24_05:33:48  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh write /datapool/awrdir_rep1 FileTest2.sh 2 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest2_1g_3k.log  /datapool/awrdir_rep1/FileTest2_1gx2_3k 1g  3k
+2019-11-24_05:34:01 [INFO]:FileTest2.sh: 1gx2_3k wirte pass
+

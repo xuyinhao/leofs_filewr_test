@@ -11,6 +11,12 @@ declare -i MAX_LOG_TAR=2
 declare	LAST_TIME=""
 declare LOG_FILE_FULL_PATH=""
 declare SCRIPT_NAME="log_tool.sh"
+
+#日志属性
+cpath=`dirname $0`
+cpath=`cd "${cpath}";cd "..";pwd`
+. ${cpath}/conf/default.conf #> /dev/null 2>&1
+
 ##########################################################################
 #  DESCRIPTION  :log save to file 
 #  Para         : $1 logLevel $2:msg $3:lineNo  ($4: logfilepath)
@@ -29,8 +35,7 @@ log()
 		local logFile=$LOG_FILE_FULL_PATH
 	fi
     local logTime="$(date +'%Y-%m-%d_%T')"   
-    printf "[${logTime}] ${logLevel}: ${message} (${FUNCNAME[2]};${lineNo})\n" \
- 	>> "${logFile}" 2>&1
+    printf  "[${logTime}] ${logLevel}: ${message} (${FUNCNAME[2]};${lineNo})\n" >> "${logFile}" 2>&1
     [ $? -ne 0 ] && return 1
 	return 0
 
@@ -40,7 +45,7 @@ log_debug()
 {
 	local lineNo=$2
 	local log_full_path="$3"
-	#local LOG_LEVEL=2
+	local LOG_LEVEL=$LogLevel
 	if [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -gt 2 ]];then
 		log "DEBUG" "$1" "$lineNo" "$log_full_path"
 	elif [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -le 2 ]];then
@@ -54,6 +59,7 @@ log_warn()
 {
     local lineNo=$2
 	local log_full_path="$3"
+	local LOG_LEVEL=$LogLevel
 	if [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -gt 1 ]];then
     	log "WARN" "$1" "$lineNo" "$log_full_path"
 	elif [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -le 1 ]];then
@@ -63,10 +69,12 @@ log_warn()
 	fi
 }
 
+# $1:msg   $2:lineno $3: logpath
 log_info()
 {
     local lineNo=$2
 	local log_full_path="$3"
+	local LOG_LEVEL=$LogLevel
     if [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -gt 0 ]];then
     	log "INFO" "$1" "$lineNo" "$log_full_path"
     elif [[ ! -z "$LOG_LEVEL" && $LOG_LEVEL -le 0 ]];then
@@ -90,10 +98,10 @@ log_error()
 show_log()
 {
     local logTime="$(date +'%Y-%m-%d_%T')"
-    if [ "$1" = "ERROR" ];then
-        echo "$logTime [ERROR]:$2" 1>&2
-    elif [ "$1" = "INFO" ];then
-        echo "$logTime  [INFO]:$2"
+    if [ "$1" = "ERROR" -o "$1" = "error" ];then
+        echo "$logTime [ERROR]:${2}" 1>&2
+    elif [ "$1" = "INFO" -o "$1" = "info" ];then
+        echo "$logTime  [INFO]:${2}"
     else
         echo "`date +%D_%T` : $@"
     fi
@@ -108,7 +116,7 @@ log_and_show()
     local logFile="$4"
 
     log "${logLevel}" "${message}" "${lineNo}" "${logFile}"
-    show_log "${logLevel}" "${message}"
+    show_log "${logLevel}" "${message}" "${lineNo}"
 
 }
 log_and_echo()
@@ -191,6 +199,8 @@ tar_log_file()
 
 ##########################################################################
 #  DESCRIPTION  : init log file
+#  Parm 		: $1: 日志文件全路径，如果文件过大则tar压缩
+#				: $2: 可选，日志最多保留的tar个数。默认20个
 ##########################################################################
 init_log()
 {
@@ -240,7 +250,7 @@ syslog()
     local status="$3"
     local msg="$4"
     
-    if [ "$3" -eq "0" ];then 
+    if [[ "$3" == "0" ]];then 
 	status="success"
     else
 	status="failed"
@@ -250,7 +260,7 @@ syslog()
     [ "$?" -ne "0" ] && return 2;	
     
     #login_user_ip="$(who|sed 's/.*(//g;s/)//g')"
-    login_user_ip=$(who |grep -oP '.*\(\K([.0-9]+)')
+    login_user_ip=$(who -m|grep -oP '.*\(\K([.0-9]+)')
     exec_user="`whoami`"
     logger -t $componet -i "${projectName}[$filename];${status};${exec_user};${login_user_ip}:${msg}"
     return 0

@@ -1,3 +1,1 @@
-FGTest1.sh /datapool/awrdir_rep2
-FGTest1.sh /datapool/awrdir_xd83
-FileTest2.sh /datapool/awrdir_xd43
+FGTest.sh 1 /datapool/awrdir_rep1 

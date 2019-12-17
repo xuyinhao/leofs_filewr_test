@@ -57,9 +57,9 @@ def opFile(thrname):
 	dosize = 0
 	rsize = 0
 	opfile = file + '_' + thrname + '.txt'
-	return_code=subprocess.Popen("/LeoCluster/bin/leofs_getgrpinfo "+opfile+" 0", shell=True,stdout=subprocess.PIPE)
-        re=return_code.stdout.readlines()
-        print(''.join(re))
+	#return_code=subprocess.Popen("/LeoCluster/bin/leofs_getgrpinfo "+opfile+" 0", shell=True,stdout=subprocess.PIPE)
+     #   re=return_code.stdout.readlines()
+     #   print(''.join(re))
 
 	begintime = time.time()
 	try:

@@ -1,0 +1,5 @@
+[2019-11-25_16:07:51] INFO: Create log file /datapool/aleo/log/ret.log successfully. (main;[log_tool.sh:215])
+[2019-11-25_17:26:44] INFO: /datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTest.sh write /datapool/awrdir_rep1 FileTest0 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k (main;32)
+[2019-11-25_17:26:51] INFO: /datapool/awrdir_rep1/FileTest0_1gx1_1k,FileTest0: 1gx1_1k wirte  pass (run;63)
+[2019-11-25_17:34:24] INFO: /datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTest.sh check /datapool/awrdir_rep1 FileTest0 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k (main;32)
+[2019-11-25_17:34:31] INFO:  /datapool/awrdir_rep1/FileTest0_1gx1_1k, FileTest0: 1gx1_1k read  pass (check;81)

@@ -1,0 +1,36 @@
+node30
+
+Sun Nov 24 05:24:51 2019
+2019-11-24_05:24:51  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest0.sh 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k
+2019-11-24_05:24:58 [INFO]:FileTest0.sh: 1gx1_1k read pass
+
+node30
+
+Sun Nov 24 05:24:51 2019
+2019-11-24_05:24:51  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest2.sh 2 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest2_1g_3k.log  /datapool/awrdir_rep1/FileTest2_1gx2_3k 1g  3k
+2019-11-24_05:24:59 [INFO]:FileTest2.sh: 1gx2_3k read pass
+
+node30
+
+Sun Nov 24 05:25:34 2019
+2019-11-24_05:25:34  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest0.sh 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k
+2019-11-24_05:25:41 [INFO]:FileTest0.sh: 1gx1_1k read pass
+
+node30
+
+Sun Nov 24 05:25:34 2019
+2019-11-24_05:25:34  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest2.sh 2 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest2_1g_3k.log  /datapool/awrdir_rep1/FileTest2_1gx2_3k 1g  3k
+2019-11-24_05:25:41 [INFO]:FileTest2.sh: 1gx2_3k read pass
+
+node30
+
+Sun Nov 24 05:40:11 2019
+2019-11-24_05:40:11  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest0.sh 1 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest0_1g_1k.log  /datapool/awrdir_rep1/FileTest0_1gx1_1k 1g  1k
+2019-11-24_05:40:19 [INFO]:FileTest0.sh: 1gx1_1k read pass
+
+node30
+
+Sun Nov 24 05:40:11 2019
+2019-11-24_05:40:11  [INFO]:/datapool/aleo/bin/FileTest.sh,exce /datapool/aleo/bin/FileTestMaster.sh check /datapool/awrdir_rep1 FileTest2.sh 2 /datapool/awrdir_rep1/log/filetesterror.log /datapool/awrdir_rep1/log/ftlogFileTest2_1g_3k.log  /datapool/awrdir_rep1/FileTest2_1gx2_3k 1g  3k
+2019-11-24_05:40:19 [INFO]:FileTest2.sh: 1gx2_3k read pass
+
